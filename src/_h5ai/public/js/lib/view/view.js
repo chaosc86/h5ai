@@ -191,7 +191,7 @@ const createHtml = (item) => {
         .attr("alt", item.type)
         .attr(
             "style",
-            `--src: url('${item.icon}');--fallback: url('${item.icon}')`
+            `--src: url("${item.icon}");--fallback: url("${item.icon}")`
         );
 
     $iconSquare
@@ -199,7 +199,7 @@ const createHtml = (item) => {
         .attr("alt", item.type)
         .attr(
             "style",
-            `--src: url('${item.icon}');--fallback: url('${item.icon}')`
+            `--src: url("${item.icon}");--fallback: url("${item.icon}")`
         );
 
     if (item.isFolder() && !item.isCurrentParentFolder()) {
@@ -208,9 +208,10 @@ const createHtml = (item) => {
             .attr("alt", item.type)
             .attr(
                 "style",
-                `--src: url('${window.location.pathname}${item.label}/.thumb.jpg'); --fallback: url('${item.icon}')`
+                `--src: url("${window.location.pathname}${item.label}/.thumb.jpg"); --fallback: url("${item.icon}")`
             );
     }
+
     item.$view = $html;
     $html[0]._item = item;
 
@@ -259,6 +260,15 @@ const setHint = (l10nKey) => {
     checkHint();
 };
 
+const setProtect = (item) => {
+    if (item.protected) {
+        dom("#view-hint").rmCls("l10n-empty");
+        setHint("protected");
+    } else {
+        setHint("empty");
+    }
+};
+
 const onLocationChanged = (item) => {
     if (!item) {
         item = location.getItem();
@@ -275,8 +285,9 @@ const onLocationChanged = (item) => {
             items.push(child);
         }
     });
-
-    setHint("empty");
+    dom("#login-wrapper").rm();
+    setProtect(item);
+    //setHint("empty");
     setItems(items);
 };
 
@@ -289,7 +300,8 @@ const onLocationRefreshed = (item, added, removed) => {
         }
     });
 
-    setHint("empty");
+    setProtect(item);
+    //setHint("empty");
     changeItems(add, removed);
 };
 

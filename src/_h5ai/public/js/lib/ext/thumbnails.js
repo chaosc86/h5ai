@@ -46,7 +46,7 @@ const queueItem = (queue, item) => {
             //.attr("src", item.thumbSquare)
             .attr(
                 "style",
-                `--src: url('${item.thumbSquare}');--fallback: url()`
+                `--src: url("${item.thumbSquare}");--fallback: url()`
             );
     } else {
         queue.push({
@@ -62,7 +62,7 @@ const queueItem = (queue, item) => {
                         //.attr("src", src)
                         .attr(
                             "style",
-                            `--src: url('${src}');--fallback: url()`
+                            `--src: url("${src}");--fallback: url()`
                         );
                 }
             },
@@ -76,7 +76,7 @@ const queueItem = (queue, item) => {
             //.attr("src", item.thumbRational)
             .attr(
                 "style",
-                `--src: url('${item.thumbRational}');--fallback: url()`
+                `--src: url("${item.thumbRational}");--fallback: url()`
             );
     } else {
         queue.push({
@@ -92,7 +92,7 @@ const queueItem = (queue, item) => {
                         //.attr("src", src)
                         .attr(
                             "style",
-                            `--src: url('${src}');--fallback: url()`
+                            `--src: url("${src}");--fallback: url()`
                         );
                 }
             },

@@ -10,25 +10,13 @@ const TEST = join(ROOT, 'test');
 const BUILD = join(ROOT, 'build');
 
 const mapper = mapfn.p(SRC, BUILD).s('.less', '.css').s('.pug', '');
-const WEBPACK_CFG = {
-    mode: 'none',
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env']
-                    }
-                }
-            },
-            {
-                test: /jsdom/,
-                use: 'null-loader'
-            }
-        ]
-    }
+const webpack_cfg = (...include) => {
+    const cfg = webpack.cfg(include);
+    cfg.module.rules.push({
+        test: /jsdom/,
+        loader: 'null-loader'
+    });
+    return cfg;
 };
 
 ghu.defaults('release');
@@ -65,7 +53,7 @@ ghu.task('clean', 'delete build folder', () => {
 
 ghu.task('build:scripts', runtime => {
     return read(`${SRC}/_h5ai/public/js/scripts.js`)
-        .then(webpack(WEBPACK_CFG))
+        .then(webpack(webpack_cfg(SRC)))
         .then(wrap('\n\n// @include "pre.js"\n\n'))
         .then(includeit())
         .then(ife(() => runtime.args.production, uglify()))
@@ -106,7 +94,13 @@ ghu.task('build:copy', runtime => {
             }))
             .then(write(mapper, {overwrite: true, cluster: true})),
 
+        read(`${SRC}/_h5ai/public/ext/*.js`)
+            .then(write(mapper, {overwrite: true, cluster: true})),
+
         read(`${ROOT}/*.md`)
+            .then(write(mapper_root, {overwrite: true, cluster: true})),
+
+        read(`${ROOT}/*.sh`)
             .then(write(mapper_root, {overwrite: true, cluster: true}))
     ]);
 });
@@ -120,7 +114,7 @@ ghu.task('build:tests', ['build:styles'], 'build the test suite', () => {
             .then(write(`${BUILD}/test/index.html`, {overwrite: true})),
 
         read(`${TEST}: index.js`)
-            .then(webpack(WEBPACK_CFG))
+            .then(webpack(webpack_cfg(SRC, TEST)))
             .then(wrap(`\n\n// @include "${SRC}/**/js/pre.js"\n\n`))
             .then(includeit())
             .then(write(mapfn.p(TEST, `${BUILD}/test`), {overwrite: true}))

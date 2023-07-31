@@ -1,4 +1,5 @@
 <?php
+//include 'login.php';
 
 define('H5AI_VERSION', '{{VERSION}}');
 define('MIN_PHP_VERSION', '7.0.0');

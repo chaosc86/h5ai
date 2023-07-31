@@ -3,7 +3,7 @@ const {each, filter, hasLength, is, isStr, map, isInstanceOf, toArray} = require
 const win = global.window;
 const doc = win.document;
 
-const parse_html = (() => {
+const parseHtml = (() => {
     const create = name => doc.createElement(name);
     const rules = [
         [/^<t(head|body|foot)|^<c(ap|olg)/i, create('table')],
@@ -32,7 +32,7 @@ const parse_html = (() => {
     };
 })();
 
-const query_all = (selector, context = doc) => {
+const queryAll = (selector, context = doc) => {
     try {
         return toArray(context.querySelectorAll(selector));
     } catch (err) {
@@ -40,27 +40,27 @@ const query_all = (selector, context = doc) => {
     }
 };
 
-const is_el = x => isInstanceOf(x, win.Element);
-const is_doc = x => isInstanceOf(x, win.Document);
-const is_win = x => is(x) && x.window === x && is_doc(x.document);
-const is_el_doc_win = x => is_el(x) || is_doc(x) || is_win(x);
+const isElement = x => isInstanceOf(x, win.Element);
+const isDocument = x => isInstanceOf(x, win.Document);
+const isWindow = x => is(x) && x.window === x && isDocument(x.document);
+const isElDocWin = x => isElement(x) || isDocument(x) || isWindow(x);
 
-const add_listener = (el, type, fn) => el.addEventListener(type, fn);
-const remove_listener = (el, type, fn) => el.removeEventListener(type, fn);
+const addListener = (el, type, fn) => el.addEventListener(type, fn);
+const removeListener = (el, type, fn) => el.removeEventListener(type, fn);
 
-const ready_promise = new Promise(resolve => {
+const readyPromise = new Promise(resolve => {
     if ((/^(i|c|loade)/).test(doc.readyState)) {
         resolve();
     } else {
-        add_listener(doc, 'DOMContentLoaded', () => resolve());
+        addListener(doc, 'DOMContentLoaded', () => resolve());
     }
 });
-const await_ready = () => ready_promise;
+const awaitReady = () => readyPromise;
 
-const load_promise = new Promise(resolve => {
-    add_listener(win, 'load', () => resolve());
+const loadPromise = new Promise(resolve => {
+    addListener(win, 'load', () => resolve());
 });
-const await_load = () => load_promise;
+const awaitLoad = () => loadPromise;
 
 const dom = arg => {
     if (isInstanceOf(arg, dom)) {
@@ -70,13 +70,13 @@ const dom = arg => {
     let els;
     if (isStr(arg)) {
         arg = arg.trim();
-        els = arg[0] === '<' ? parse_html(arg) : query_all(arg);
-    } else if (is_el_doc_win(arg)) {
+        els = arg[0] === '<' ? parseHtml(arg) : queryAll(arg);
+    } else if (isElDocWin(arg)) {
         els = [arg];
     } else {
         els = hasLength(arg) ? arg : [arg];
     }
-    els = filter(els, is_el_doc_win);
+    els = filter(els, isElDocWin);
 
     return Object.assign(Object.create(dom.prototype), els, {length: els.length});
 };
@@ -94,15 +94,15 @@ dom.prototype = {
     },
 
     find(selector) {
-        return dom([].concat(...this.map(el => query_all(selector, el))));
+        return dom([].concat(...this.map(el => queryAll(selector, el))));
     },
 
     on(type, fn) {
-        return this.each(el => add_listener(el, type, fn));
+        return this.each(el => addListener(el, type, fn));
     },
 
     off(type, fn) {
-        return this.each(el => remove_listener(el, type, fn));
+        return this.each(el => removeListener(el, type, fn));
     },
 
     attr(key, value) {
@@ -271,7 +271,7 @@ dom.prototype = {
 };
 
 module.exports = {
-    awaitReady: await_ready,
-    awaitLoad: await_load,
+    awaitReady,
+    awaitLoad,
     dom
 };

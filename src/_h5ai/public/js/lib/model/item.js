@@ -3,6 +3,7 @@ const server = require('../server');
 const location = require('../core/location');
 const settings = require('../core/settings');
 const types = require('../core/types');
+const password = require('../ext/password');
 
 const reEndsWithSlash = /\/$/;
 const reSplitPath = /^(.*\/)([^\/]+\/?)$/;
@@ -70,7 +71,9 @@ const getItem = options => {
     if (options.fetched) {
         item.isContentFetched = true;
     }
-
+    if (options.protected) {
+        item.protected = true;
+    }
     return item;
 };
 
@@ -98,7 +101,9 @@ const fetchContent = absHref => {
             resolve(item);
         } else {
             server.request({action: 'get', items: {href: item.absHref, what: 1}}).then(response => {
-                if (response.items) {
+                if (response.password) {
+                    password.addVerify();
+                } else if (!response.password && response.items) {
                     each(response.items, jsonItem => {
                         getItem(jsonItem);
                     });
@@ -122,6 +127,7 @@ const Item = absHref => {
         size: null,
         parent: null,
         isManaged: null,
+        protected: null,
         content: {}
     });
 

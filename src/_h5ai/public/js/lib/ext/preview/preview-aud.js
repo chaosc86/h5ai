@@ -24,7 +24,7 @@ const updateGui = () => {
 
 const addUnloadFn = el => {
     el.unload = () => {
-        el.pause();
+        //el.pause();
         el.src = '';
         el.load();
     };

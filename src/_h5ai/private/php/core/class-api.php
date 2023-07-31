@@ -13,7 +13,7 @@ class Api {
 
     public function apply() {
         $action = $this->request->query('action');
-        $supported = ['download', 'get', 'login', 'logout'];
+        $supported = ['download', 'get', 'login', 'logout', 'password'];
         Util::json_fail(Util::ERR_UNSUPPORTED, 'unsupported action', !in_array($action, $supported));
 
         $methodname = 'on_' . $action;
@@ -31,7 +31,6 @@ class Api {
         $archive = new Archive($this->context);
 
         set_time_limit(0);
-        session_write_close();
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="' . $as . '"');
         header('Connection: close');
@@ -63,7 +62,21 @@ class Api {
         if ($this->request->query('items', false)) {
             $href = $this->request->query('items.href');
             $what = $this->request->query_numeric('items.what');
-            $response['items'] = $this->context->get_items($href, $what);
+            $path = $this->context->get_current_path();
+            if ($this->context->has_password($path) && $this->context->query_option('password.enabled', false)) {
+                $response['password'] = true;
+                if ($this->context->verify_cookie($path, $_COOKIE['password_verify'])) {
+                    $response['items'] = $this->context->get_items($href, $what);
+                } else {
+                    $response['items'][] = [
+                        "href" => '/' . end(explode("/",$path)) . '/' ,
+                        "protected" => true
+                    ];
+                }
+            }else{
+                $response['password'] = false;
+                $response['items'] = $this->context->get_items($href, $what);
+            }
         }
 
         if ($this->request->query('custom', false)) {
@@ -97,6 +110,14 @@ class Api {
         }
 
         Util::json_exit($response);
+    }
+
+    private function on_password() {
+        Util::json_fail(Util::ERR_DISABLED, 'password disabled', !$this->context->query_option('password.enabled', false));
+        $password = $this->request->query('password');
+        $path = $this->context->get_current_path();
+        $result = $this->context->verify_password($path, $password);
+        Util::json_exit($result);
     }
 
     private function on_login() {
