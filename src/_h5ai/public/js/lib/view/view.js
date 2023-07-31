@@ -208,7 +208,7 @@ const createHtml = (item) => {
             .attr("alt", item.type)
             .attr(
                 "style",
-                `--src: url('${window.location.href}${item.label}/.thumb.jpg'); --fallback: url('${item.icon}')`
+                `--src: url('${window.location.pathname}${item.label}/.thumb.jpg'); --fallback: url('${item.icon}')`
             );
     }
     item.$view = $html;
