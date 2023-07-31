@@ -12,7 +12,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "node test",
-    "build": "node ghu release",
+    "build": "node --openssl-legacy-provider ghu release",
     "precommit": "npm run -s lint && npm run -s test"
   },
   "devDependencies": {
